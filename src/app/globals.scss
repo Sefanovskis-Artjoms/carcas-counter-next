@@ -1,0 +1,23 @@
+@use "@/styles/base" as *;
+@use "@/styles/breakpoints" as *;
+@use "@/styles/components" as *;
+@import "tailwindcss";
+
+@theme inline {
+  --color-text-regular: var(--color-text-regular);
+  --color-text-disabled: var(--color-text-disabled);
+  --color-background: var(--color-background);
+  --color-border: var(--color-border);
+  --color-border-lighter: var(--color-border-lighter);
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-saturated: var(--color-primary-saturated);
+  --color-secondary: var(--color-secondary);
+  --color-neutral: var(--color-neutral);
+  --color-approve: var(--color-approve);
+  --color-reject: var(--color-reject);
+  --color-highlight: var(--color-highlight);
+  --color-error: var(--color-error);
+
+  --border-radius-regular: var(--border-radius-regular);
+}

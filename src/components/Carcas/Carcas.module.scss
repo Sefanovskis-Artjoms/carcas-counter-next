@@ -1,0 +1,63 @@
+.container {
+  position: relative;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 64.64 / 160.09;
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: var(--color-primary-saturated, #d96666);
+  stroke: var(--color-text-regular, #212529);
+
+  stroke-width: 0.05rem;
+  stroke-dasharray: 3 2;
+
+  transition: opacity 0.2s ease;
+
+  &Disabled {
+    opacity: 0.4;
+  }
+
+  &:not(.pieceDisabled) {
+    svg {
+      pointer-events: none;
+      overflow: visible;
+      width: 100%;
+      height: 100%;
+      display: block;
+
+      g {
+        pointer-events: auto;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+        transform-origin: center;
+
+        &:active {
+          path,
+          text {
+            transform: scale(1.015) translate(-1.5%, -1.5%);
+          }
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            path,
+            text {
+              transform: scale(1.015) translate(-1.5%, -1.5%);
+            }
+          }
+        }
+      }
+    }
+  }
+}

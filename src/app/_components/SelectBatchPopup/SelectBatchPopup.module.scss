@@ -1,0 +1,14 @@
+.popup {
+  position: absolute;
+  z-index: 20;
+  top: 140%;
+  left: 50%;
+  transform: translateX(-52.5%);
+  width: 52rem;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-regular);
+  border: 0.1rem solid var(--color-border);
+  box-shadow: 0 0.4rem 1.2rem var(--color-text-regular);
+
+  overflow: hidden;
+}

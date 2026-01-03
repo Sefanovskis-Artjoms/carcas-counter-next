@@ -1,0 +1,103 @@
+.main-container {
+  min-height: 100vh;
+  max-width: 145rem;
+  padding: 3.2rem;
+  padding-top: 1.8rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  padding: 0.8rem;
+  border-radius: var(--border-radius-regular);
+  font-size: 1.6rem;
+  border: 1px solid var(--color-border);
+}
+
+.btn {
+  padding: 0.8rem 1.6rem;
+  border-radius: var(--border-radius-regular);
+  background-color: var(--color-neutral);
+  font-size: 1.6rem;
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  transition: transform 0.15s ease-out, filter 0.15s ease-out;
+  &:hover {
+    filter: brightness(95%);
+    cursor: pointer;
+  }
+
+  &:active {
+    filter: brightness(98%);
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    pointer-events: none;
+    cursor: normal;
+    filter: none;
+    transform: none;
+    transition: none;
+    opacity: 0.5;
+  }
+
+  &--reject {
+    padding-left: 2.4rem;
+    padding-right: 2.4rem;
+  }
+  &--approve {
+    background-color: var(--color-approve);
+  }
+  &--reject {
+    background-color: var(--color-reject);
+  }
+  &--neutral {
+    background-color: var(--color-neutral);
+  }
+  &--neutral-darker {
+    background-color: var(--color-neutral-darker);
+  }
+  &--primary {
+    background-color: var(--color-primary);
+  }
+  &--primary-light {
+    background-color: var(--color-primary-light);
+  }
+  &--primary-saturated {
+    background-color: var(--color-primary-saturated);
+  }
+  &--secondary {
+    background-color: var(--color-secondary);
+  }
+  &--highlight {
+    background-color: var(--color-highlight);
+  }
+  &--skeleton {
+    @extend .skeleton;
+    width: 10rem;
+    height: 3.4rem;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+
+  animation: shimmer 1.5s infinite linear;
+
+  color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+  border-color: transparent !important;
+  cursor: default;
+}

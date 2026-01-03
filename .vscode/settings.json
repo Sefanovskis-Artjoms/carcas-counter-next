@@ -1,0 +1,7 @@
+{
+  "tailwindCSS.experimental.configFile": "src/app/globals.scss",
+
+  "tailwindCSS.includeLanguages": {
+    "scss": "css"
+  }
+}
