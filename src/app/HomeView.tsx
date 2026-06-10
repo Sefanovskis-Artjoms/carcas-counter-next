@@ -40,6 +40,9 @@ export default function HomeView() {
   const [selectedPart, setSelectedPart] = useState<"upper" | "lower">("upper");
   const [updateAmount, setUpdateAmount] = useState(1);
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
+  const [isCarcasVisible, setIsCarcasVisible] = useState(true);
+
+  const showCarcasPanel = !selectedBatchNumber || isCarcasVisible;
 
   useEffect(() => {
     if (!selectedBatchNumber) {
@@ -208,9 +211,23 @@ export default function HomeView() {
         </div>
 
         {selectedBatchNumber && (
-          <span className="pl-4 text-4xl font-medium">
-            Selected batch: {selectedBatchNumber}
-          </span>
+          <>
+            <span className="pl-4 text-4xl font-medium">
+              Selected batch: {selectedBatchNumber}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setIsCarcasVisible((visible) => {
+                  if (visible) setIsClickAmountChanging(false);
+                  return !visible;
+                });
+              }}
+              className="btn btn--color-neutral"
+            >
+              {isCarcasVisible ? "Hide Carcas" : "Show Carcas"}
+            </button>
+          </>
         )}
 
         <Link href="/history" className="btn btn--color-neutral ml-auto">
@@ -218,79 +235,81 @@ export default function HomeView() {
         </Link>
       </div>
       <div className="flex gap-7 flex-1 min-h-0">
-        <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
-          <div className="w-fit ml-auto mr-auto flex gap-4">
-            {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
-              <button
-                key={value}
-                type="button"
-                title={title}
-                onClick={() => setSelectedPart(value)}
-                className={`btn ${
-                  selectedPart === value && selectedBatchNumber
-                    ? "btn--primary-light"
-                    : "btn--neutral"
-                }`}
-                disabled={!selectedBatchNumber}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        {showCarcasPanel && (
+          <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
+            <div className="w-fit ml-auto mr-auto flex gap-4">
+              {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
+                <button
+                  key={value}
+                  type="button"
+                  title={title}
+                  onClick={() => setSelectedPart(value)}
+                  className={`btn ${
+                    selectedPart === value && selectedBatchNumber
+                      ? "btn--primary-light"
+                      : "btn--neutral"
+                  }`}
+                  disabled={!selectedBatchNumber}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
-          <div className="flex-1 flex items-center justify-center py-[1rem] min-h-0 min-w-0 self-stretch">
-            <div className="w-full h-full min-h-0 min-w-0">
-              <Carcas
-                selectedCarcasPart={selectedPart}
-                onZoneClick={handleZoneClick}
-                isDisabled={!selectedBatchNumber}
-              />
+            <div className="flex-1 flex items-center justify-center py-4 min-h-0 min-w-0 self-stretch">
+              <div className="w-full h-full min-h-0 min-w-0">
+                <Carcas
+                  selectedCarcasPart={selectedPart}
+                  onZoneClick={handleZoneClick}
+                  isDisabled={!selectedBatchNumber}
+                />
+              </div>
+            </div>
+
+            <div className="w-60 mx-auto flex flex-col gap-4.5">
+              {isClickAmountChanging ? (
+                <>
+                  <input
+                    ref={inputRef}
+                    className="py-2 px-4 border border-border rounded-[0.3rem]"
+                    placeholder="Amount"
+                    type="number"
+                  />
+                  <button
+                    onClick={() => {
+                      if (inputRef.current) {
+                        onSetNewAmount(inputRef.current.value);
+                        inputRef.current.value = "";
+                      }
+                    }}
+                    className="btn btn--approve w-full"
+                  >
+                    Set new amount
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsClickAmountChanging(false);
+                      if (inputRef.current) {
+                        inputRef.current.value = "";
+                      }
+                    }}
+                    className="btn btn--reject w-full"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setIsClickAmountChanging(true)}
+                  className="btn btn--color-neutral"
+                  disabled={!selectedBatchNumber}
+                >
+                  Change click amount
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="w-60 mx-auto flex flex-col gap-4.5">
-            {isClickAmountChanging ? (
-              <>
-                <input
-                  ref={inputRef}
-                  className="py-2 px-4 border border-border rounded-[0.3rem]"
-                  placeholder="Amount"
-                  type="number"
-                />
-                <button
-                  onClick={() => {
-                    if (inputRef.current) {
-                      onSetNewAmount(inputRef.current.value);
-                      inputRef.current.value = "";
-                    }
-                  }}
-                  className="btn btn--approve w-full"
-                >
-                  Set new amount
-                </button>
-                <button
-                  onClick={() => {
-                    setIsClickAmountChanging(false);
-                    if (inputRef.current) {
-                      inputRef.current.value = "";
-                    }
-                  }}
-                  className="btn btn--reject w-full"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setIsClickAmountChanging(true)}
-                className="btn btn--color-neutral"
-                disabled={!selectedBatchNumber}
-              >
-                Change click amount
-              </button>
-            )}
-          </div>
-        </div>
+        )}
 
         <div className="flex-1 min-w-0">
           <Table

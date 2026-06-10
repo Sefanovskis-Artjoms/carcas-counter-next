@@ -22,6 +22,7 @@ export default function HistoricView({
   );
   const [selectedPart, setSelectedPart] = useState<"upper" | "lower">("upper");
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
+  const [isCarcasVisible, setIsCarcasVisible] = useState(true);
 
   const uniqueDates = useMemo(() => {
     const allDates = initialData.map((entry) =>
@@ -64,11 +65,20 @@ export default function HistoricView({
   return (
     <div className="flex-1 grid grid-rows-[auto_1fr] max-h-screen w-full min-h-0">
       <div className="pb-[1.8rem]">
-        <div className="flex justify-between items-center mb-4">
-          <BatchTitle />
+        <div className="flex justify-between items-center mb-4 gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <BatchTitle />
+            <button
+              type="button"
+              onClick={() => setIsCarcasVisible((visible) => !visible)}
+              className="btn btn--color-neutral shrink-0"
+            >
+              {isCarcasVisible ? "Hide Carcas" : "Show Carcas"}
+            </button>
+          </div>
           <button
             onClick={() => router.back()}
-            className="btn btn--color-neutral"
+            className="btn btn--color-neutral shrink-0"
           >
             Back
           </button>
@@ -99,6 +109,7 @@ export default function HistoricView({
         )}
       </div>
       <div className="flex gap-7 flex-1 min-h-0">
+        {isCarcasVisible && (
         <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
           <div className="w-fit ml-auto mr-auto flex gap-4">
             {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
@@ -125,6 +136,7 @@ export default function HistoricView({
             </div>
           </div>
         </div>
+        )}
 
         <div className="flex-1 min-w-0">
           <Table
