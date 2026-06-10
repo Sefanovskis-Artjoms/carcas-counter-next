@@ -1,8 +1,13 @@
 "use client";
 
-import { IconName } from "@/data/icon-data";
+import { CSSProperties } from "react";
 import styles from "./Carcas.module.scss";
-import Icon from "../Icon/Icon";
+import {
+  CARCAS_PART_CONFIG,
+  CARCAS_ZONE_LABEL_FONT_SIZE_DEFAULT,
+  CarcasZoneLabel,
+  CarcasZoneNumber,
+} from "@/data/carcas-zone-data";
 
 type CarcasPart = "upper" | "lower" | "whole";
 
@@ -12,45 +17,95 @@ interface CarcasProps {
   onZoneClick?: (zoneNumber: number) => void;
 }
 
+function CarcasPartSection({
+  config,
+  isDisabled,
+  onZoneClick,
+}: {
+  config: (typeof CARCAS_PART_CONFIG)[keyof typeof CARCAS_PART_CONFIG];
+  isDisabled: boolean;
+  onZoneClick?: (zoneNumber: number) => void;
+}) {
+  const { aspectRatio } = config;
+
+  const handleZoneClick = (zoneNumber: CarcasZoneNumber) => {
+    if (isDisabled) return;
+    onZoneClick?.(zoneNumber);
+  };
+
+  const partStyle = {
+    aspectRatio: `${aspectRatio.width} / ${aspectRatio.height}`,
+    "--aspect-w": aspectRatio.width,
+    "--aspect-h": aspectRatio.height,
+  } as CSSProperties;
+
+  return (
+    <div className={styles.partSection} style={partStyle}>
+      {config.zoneNumbers.map((zoneNum) => {
+        const labels = config.labels as Record<CarcasZoneNumber, CarcasZoneLabel>;
+        const paths = config.paths as Record<CarcasZoneNumber, string>;
+        const label = labels[zoneNum];
+        const fontSize = label.fontSize ?? CARCAS_ZONE_LABEL_FONT_SIZE_DEFAULT;
+
+        return (
+          <div
+            key={zoneNum}
+            className={`
+              ${styles.piece}
+              ${isDisabled ? styles.pieceDisabled : ""}
+            `}
+            onClick={() => handleZoneClick(zoneNum)}
+          >
+            <svg
+              viewBox={config.viewBox}
+              xmlns="http://www.w3.org/2000/svg"
+              className={styles.pieceIcon}
+            >
+              <g transform={config.transform}>
+                <path d={paths[zoneNum]} />
+                <text
+                  x={label.x}
+                  y={label.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className={styles.zoneLabel}
+                  style={{ fontSize: `${fontSize}px` }}
+                >
+                  {label.letter}
+                </text>
+              </g>
+            </svg>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Carcas({
   isDisabled = false,
   selectedCarcasPart = "whole",
   onZoneClick,
 }: CarcasProps) {
-  const zones = [1, 2, 3, 4, 5, 6, 7, 8];
+  const partsToRender: ("upper" | "lower")[] =
+    selectedCarcasPart === "whole"
+      ? ["upper", "lower"]
+      : [selectedCarcasPart];
 
-  const isPieceDisabled = (zoneNumber: number): boolean => {
-    if (isDisabled) return true;
-    if (selectedCarcasPart === "upper" && zoneNumber > 4) return true;
-    if (selectedCarcasPart === "lower" && zoneNumber <= 4) return true;
-    return false;
-  };
+  const isWhole = selectedCarcasPart === "whole";
 
-  const handleZoneClick = (zoneNumber: number) => {
-    if (isPieceDisabled(zoneNumber)) return;
-    if (onZoneClick) {
-      onZoneClick(zoneNumber);
-    }
-  };
   return (
-    <div className={styles.container}>
-      {zones.map((zoneNum) => {
-        return (
-          <div
-            key={zoneNum}
-            className={`
-              ${styles.piece} 
-              ${isPieceDisabled(zoneNum) ? styles.pieceDisabled : ""}
-            `}
-            onClick={() => handleZoneClick(zoneNum)}
-          >
-            <Icon
-              name={`silhuette-${zoneNum}` as IconName}
-              className={styles.pieceIcon}
-            />
-          </div>
-        );
-      })}
+    <div
+      className={isWhole ? styles.containerWhole : styles.container}
+    >
+      {partsToRender.map((part) => (
+        <CarcasPartSection
+          key={part}
+          config={CARCAS_PART_CONFIG[part]}
+          isDisabled={isDisabled}
+          onZoneClick={onZoneClick}
+        />
+      ))}
     </div>
   );
 }

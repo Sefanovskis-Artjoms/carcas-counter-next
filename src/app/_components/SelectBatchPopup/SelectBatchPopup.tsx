@@ -24,7 +24,7 @@ export default function SelectBatchPopup({
 
   const [inputValue, setInputValue] = useState("");
   const [todayBatches, setTodayBatches] = useState<{ batch_number: string }[]>(
-    []
+    [],
   );
   const [searchResults, setSearchResults] = useState<
     { batch_number: string }[]
@@ -47,7 +47,7 @@ export default function SelectBatchPopup({
         setTodayBatches(response.data);
       } else {
         setTodayError(
-          "An error occurred while fetching today's batches. Please try again later. If the error persists, please contact IT support."
+          "An error occurred while fetching today's batches. Please try again later. If the error persists, please contact IT support.",
         );
       }
       setIsTodayLoading(false);
@@ -90,7 +90,7 @@ export default function SelectBatchPopup({
       setIsError(true);
       setSearchMessage(
         response.error ||
-          "An error occurred while searching batches. Please try again later. If the error persists, please contact IT support."
+          "An error occurred while searching batches. Please try again later. If the error persists, please contact IT support.",
       );
       setIsSearchLoading(false);
       return;
@@ -108,7 +108,7 @@ export default function SelectBatchPopup({
       setSearchMessage(`Showing ${results.length} results`);
     } else {
       setSearchMessage(
-        `Showing first ${MAX_SEARCH_RESULTS} of ${results.length} results`
+        `Showing first ${MAX_SEARCH_RESULTS} of ${results.length} results`,
       );
     }
   };
@@ -132,7 +132,7 @@ export default function SelectBatchPopup({
     if (!searchResponse.success) {
       setIsError(true);
       setSearchMessage(
-        "An error occurred while verifying the batch number. Please try again later. If the error persists, please contact IT support."
+        "An error occurred while verifying the batch number. Please try again later. If the error persists, please contact IT support.",
       );
       setIsSearchLoading(false);
       return;
@@ -154,7 +154,7 @@ export default function SelectBatchPopup({
     if (!result.success) {
       setIsError(true);
       setSearchMessage(
-        "An error occurred while creating a new batch. Please try again later. If the error persists, please contact IT support."
+        "An error occurred while creating a new batch. Please try again later. If the error persists, please contact IT support.",
       );
       setIsSearchLoading(false);
       return;

@@ -16,7 +16,7 @@ export const queries = {
 
   createNewBatch: `
     INSERT INTO maintable 
-    (date, batch_number, zone_number, hair, faceal, grease_oil, metal, rail_dust, soft_plastic, hard_plastic, blood_clots, other, lymph_nodes)
+    (date, batch_number, zone_number, hair, foreign_object, blood_clots, grease, rail_dust, faceal_over_1cm, faceal_under_1cm, ingesta_over_1cm, ingesta_under_1cm, other)
     VALUES ?
   `,
 

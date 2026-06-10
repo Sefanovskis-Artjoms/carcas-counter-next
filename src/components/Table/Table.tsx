@@ -1,34 +1,16 @@
 "use client";
 
+import {
+  CONTAMINANT_COLUMNS,
+  createEmptyContaminantCounts,
+} from "@/data/contaminants";
+import { CarcasZoneNumber, getZonesForPart } from "@/data/carcas-zone-data";
 import { CarcasEntry } from "@/types/interfaces";
+import { getZoneDisplayLabel } from "@/data/zone-display-names";
 import styles from "./Table.module.scss";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Icon from "../Icon/Icon";
 import Spinner from "../Spinner/Spinner";
-
-const COUNTER_COLUMNS = [
-  { key: "hair", displayName: "Hair", iconKey: "hair" },
-  { key: "faceal", displayName: "Faceal", iconKey: "faceal" },
-  { key: "grease_oil", displayName: "Grease/Oil", iconKey: "grease-oil" },
-  { key: "metal", displayName: "Metal", iconKey: "metal" },
-  { key: "rail_dust", displayName: "Rail Dust", iconKey: "rail-dust" },
-  { key: "soft_plastic", displayName: "Soft Plastic", iconKey: "soft-plastic" },
-  { key: "hard_plastic", displayName: "Hard Plastic", iconKey: "hard-plastic" },
-  { key: "blood_clots", displayName: "Blood Clots", iconKey: "blood-clots" },
-  { key: "other", displayName: "Other", iconKey: "other" },
-  { key: "lymph_nodes", displayName: "Lymph Nodes", iconKey: "lymph-nodes" },
-] as const;
-
-const ZONE_NAMES: Record<number, string> = {
-  1: "A - Chuck",
-  2: "B - Brisket",
-  3: "C - Rib",
-  4: "D - Plate",
-  5: "E - Loin 2/2",
-  6: "F - Loin 1/2",
-  7: "G - Flank",
-  8: "H - Round",
-};
 
 const HIGHLIGHT_DURATION = 500;
 
@@ -63,36 +45,30 @@ export default function Table({
   const [highlightedIds, setHighlightedIds] = useState<number[]>([]);
   const timersMap = useRef<Map<number, NodeJS.Timeout>>(new Map());
 
+  const activeZoneNumbers = useMemo(
+    () => getZonesForPart(selectedCarcasPart),
+    [selectedCarcasPart],
+  );
+
   const normalizedData = useMemo(() => {
-    let processedData = [...data];
+    const dataByZone = new Map(data.map((entry) => [entry.zone_number, entry]));
+    const batchNumber = data[0]?.batch_number ?? "N/A";
+    const batchDate = data[0]?.date ?? new Date().toISOString();
 
-    if (processedData.length === 0) {
-      processedData = Array.from({ length: 8 }, (_, i) => ({
-        id: i + 1,
-        date: new Date().toISOString(),
-        batch_number: "N/A",
-        zone_number: (i + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8,
-        hair: 0,
-        faceal: 0,
-        grease_oil: 0,
-        metal: 0,
-        rail_dust: 0,
-        soft_plastic: 0,
-        hard_plastic: 0,
-        blood_clots: 0,
-        other: 0,
-        lymph_nodes: 0,
-      }));
-    }
+    return activeZoneNumbers.map((zoneNumber) => {
+      const existing = dataByZone.get(zoneNumber as CarcasZoneNumber);
+      if (existing) return existing;
 
-    if (selectedCarcasPart === "upper") {
-      processedData = processedData.filter((c) => c.zone_number <= 4);
-    } else if (selectedCarcasPart === "lower") {
-      processedData = processedData.filter((c) => c.zone_number >= 5);
-    }
-
-    return processedData.sort((a, b) => a.zone_number - b.zone_number);
-  }, [data, selectedCarcasPart]);
+      // Placeholder for zones not yet in DB (e.g. legacy 8-zone batches)
+      return {
+        id: -zoneNumber,
+        date: batchDate,
+        batch_number: batchNumber,
+        zone_number: zoneNumber as CarcasZoneNumber,
+        ...createEmptyContaminantCounts(),
+      };
+    });
+  }, [data, activeZoneNumbers]);
 
   useEffect(() => {
     if (highlightRow === null) return;
@@ -119,41 +95,41 @@ export default function Table({
     timersMap.current.set(entry.id, newTimerId);
   }, [highlightRow, normalizedData]);
 
-  // Nosakām, vai saturs ir jāpadara blāvs un neaktīvs.
-  // Tas notiek, ja ir isDisabled VAI notiek ielāde.
   const contentOpacityClass =
     isDisabled || isLoading ? "opacity-50 pointer-events-none" : "";
+  const isWholeMode = selectedCarcasPart === "whole";
 
   return (
     <div
-      className={`
-        ${styles.container}
-        w-full h-full relative gap-x-[0.6rem] gap-y-[0.4rem]
-        ${selectedCarcasPart !== "whole" ? styles.halfTable : ""}
-      `}
+      className={`${styles.container} ${isWholeMode ? styles.wholeMode : ""} w-full h-full relative gap-x-[0.6rem] gap-y-[0.4rem]`}
       style={{
-        gridTemplateRows: `max-content repeat(${COUNTER_COLUMNS.length}, 1fr)`,
+        gridTemplateColumns: `var(--contaminant-col-width) repeat(${normalizedData.length}, minmax(0, 1fr))`,
+        gridTemplateRows: `max-content repeat(${CONTAMINANT_COLUMNS.length}, 1fr)`,
       }}
     >
       <div
         className={`flex w-full h-full items-center justify-center text-[2rem] text-text-regular ${contentOpacityClass}`}
       ></div>
 
-      {normalizedData.map((entry) => (
+      {normalizedData.map((entry, zoneIndex) => (
         <div
           key={entry.id}
-          className={`flex w-full h-full items-center justify-center text-[2rem] text-text-regular ${contentOpacityClass}`}
+          className={`
+            ${styles.zoneHeader} flex w-full h-full items-center justify-center text-text-regular text-center
+            ${zoneIndex % 2 === 1 ? styles.altColumn : ""}
+            ${contentOpacityClass}
+          `}
         >
-          {ZONE_NAMES[entry.zone_number]}
+          {getZoneDisplayLabel(entry.zone_number)}
         </div>
       ))}
 
-      {COUNTER_COLUMNS.map((col) => (
+      {CONTAMINANT_COLUMNS.map((col) => (
         <Fragment key={col.key}>
           <div
-            className={`flex w-full h-full items-center justify-center ${contentOpacityClass}`}
+            className={`${styles.contaminantCell} flex w-full h-full items-center ${contentOpacityClass}`}
           >
-            <div className="w-max flex items-center justify-start gap-[0.8rem] pr-[0.6rem] text-[2rem] text-text-regular">
+            <div className={`${styles.contaminantLabel} text-text-regular`}>
               <Icon
                 name={col.iconKey}
                 className={`${styles.icon} ${styles[col.iconKey]}`}
@@ -162,27 +138,39 @@ export default function Table({
             </div>
           </div>
 
-          {normalizedData.map((entry) => {
+          {normalizedData.map((entry, zoneIndex) => {
             const value = entry[col.key as keyof CarcasEntry] as number;
             const isHighlighted = highlightedIds.includes(entry.id);
+            const isAltColumn = zoneIndex % 2 === 1;
+            const isPlaceholder = entry.id < 0;
 
             return (
               <div
-                key={`${entry.id}-${col.key}`}
-                className={`flex w-full h-full items-center justify-center ${contentOpacityClass}`}
+                key={`${entry.zone_number}-${col.key}`}
+                className={`
+                  flex w-full h-full items-center justify-center
+                  ${isAltColumn ? styles.altColumn : ""}
+                  ${contentOpacityClass}
+                `}
               >
                 <button
                   key={increaseMode.toString()}
                   className={`
                     ${styles.btn}
                     relative w-full h-full flex items-center justify-center
-                    text-[2rem] font-medium rounded-[0.3rem] border border-border
-                    ${!increaseMode ? styles.decrease : ""} 
-                    ${isReadOnly ? styles.readonly : ""}
+                    font-medium rounded-[0.3rem] border border-border
+                    ${!increaseMode ? styles.decrease : ""}
+                    ${isReadOnly || isPlaceholder ? styles.readonly : ""}
                     ${isHighlighted ? styles.highlighted : ""}
                   `}
                   onClick={() => {
-                    if (isReadOnly || isLoading || !onValueUpdate) return;
+                    if (
+                      isReadOnly ||
+                      isLoading ||
+                      isPlaceholder ||
+                      !onValueUpdate
+                    )
+                      return;
 
                     onValueUpdate({
                       id: entry.id,
@@ -191,10 +179,12 @@ export default function Table({
                       amount: updateAmount,
                     });
                   }}
-                  disabled={isReadOnly || isLoading}
+                  disabled={isReadOnly || isLoading || isPlaceholder}
                 >
                   {!isReadOnly && (
-                    <div className="absolute top-[0.4rem] right-[0.4rem] text-[1.3rem] font-semibold pointer-events-none">
+                    <div
+                      className={`${styles.counterBadge} absolute top-[0.4rem] right-[0.4rem] font-semibold pointer-events-none`}
+                    >
                       {increaseMode ? "+" : "-"}
                       {updateAmount}
                     </div>

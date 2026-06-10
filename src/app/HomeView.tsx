@@ -10,6 +10,7 @@ import { getBatchData, updateCounterAction } from "@/actions/batch-actions";
 import SelectBatchPopup from "@/app/_components/SelectBatchPopup/SelectBatchPopup";
 import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { CARCAS_PART_SELECT_OPTIONS } from "@/data/zone-display-names";
 import {
   CarcasEntry,
   ActionResponse,
@@ -142,7 +143,7 @@ export default function HomeView() {
             }
             return row;
           });
-        }
+        },
       );
 
       return { previousData };
@@ -151,11 +152,11 @@ export default function HomeView() {
       if (context?.previousData) {
         queryClient.setQueryData(
           ["batchData", selectedBatchNumber],
-          context.previousData
+          context.previousData,
         );
       }
       toast.error(
-        "Failed to update, unexpected server error occured. If this error persists, please contact support."
+        "Failed to update, unexpected server error occured. If this error persists, please contact support.",
       );
     },
     onSettled: (data) => {
@@ -216,42 +217,38 @@ export default function HomeView() {
           View History
         </Link>
       </div>
-      <div className="flex gap-5 flex-1 min-h-0">
-        <div className="flex flex-col gap-4 shrink-0">
+      <div className="flex gap-7 flex-1 min-h-0">
+        <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
           <div className="w-fit ml-auto mr-auto flex gap-4">
-            <button
-              onClick={() => setSelectedPart("upper")}
-              className={`btn ${
-                selectedPart === "upper" && selectedBatchNumber
-                  ? "btn--primary-light"
-                  : "btn--neutral"
-              }`}
-              disabled={!selectedBatchNumber}
-            >
-              Upper part
-            </button>
-            <button
-              onClick={() => setSelectedPart("lower")}
-              className={`btn ${
-                selectedPart === "lower" && selectedBatchNumber
-                  ? "btn--primary-light"
-                  : "btn--neutral"
-              }`}
-              disabled={!selectedBatchNumber}
-            >
-              Lower part
-            </button>
+            {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
+              <button
+                key={value}
+                type="button"
+                title={title}
+                onClick={() => setSelectedPart(value)}
+                className={`btn ${
+                  selectedPart === value && selectedBatchNumber
+                    ? "btn--primary-light"
+                    : "btn--neutral"
+                }`}
+                disabled={!selectedBatchNumber}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          <div className="flex-1 flex items-center justify-center py-[1.8rem]">
-            <Carcas
-              selectedCarcasPart={selectedPart}
-              onZoneClick={handleZoneClick}
-              isDisabled={!selectedBatchNumber}
-            />
+          <div className="flex-1 flex items-center justify-center py-[1rem] min-h-0 min-w-0 self-stretch">
+            <div className="w-full h-full min-h-0 min-w-0">
+              <Carcas
+                selectedCarcasPart={selectedPart}
+                onZoneClick={handleZoneClick}
+                isDisabled={!selectedBatchNumber}
+              />
+            </div>
           </div>
 
-          <div className="w-56 mx-auto flex flex-col gap-4.5">
+          <div className="w-60 mx-auto flex flex-col gap-4.5">
             {isClickAmountChanging ? (
               <>
                 <input
@@ -295,7 +292,7 @@ export default function HomeView() {
           </div>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <Table
             data={batchData}
             isLoading={isBatchLoading}
@@ -310,8 +307,8 @@ export default function HomeView() {
               isBatchError
                 ? "Error: Failed to load data"
                 : !selectedBatchNumber
-                ? "No Batch Selected"
-                : undefined
+                  ? "No Batch Selected"
+                  : undefined
             }
           />
         </div>

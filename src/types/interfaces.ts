@@ -1,18 +1,21 @@
+import { CarcasZoneNumber } from "@/data/carcas-zone-data";
+import { ContaminantKey } from "@/data/contaminants";
+
 export interface CarcasEntry {
   id: number;
   date: string;
   batch_number: string;
-  zone_number: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  zone_number: CarcasZoneNumber;
   hair: number;
-  faceal: number;
-  grease_oil: number;
-  metal: number;
-  rail_dust: number;
-  soft_plastic: number;
-  hard_plastic: number;
+  foreign_object: number;
   blood_clots: number;
+  grease: number;
+  rail_dust: number;
+  faceal_over_1cm: number;
+  faceal_under_1cm: number;
+  ingesta_over_1cm: number;
+  ingesta_under_1cm: number;
   other: number;
-  lymph_nodes: number;
 }
 
 export interface UpdateCounterPayload {

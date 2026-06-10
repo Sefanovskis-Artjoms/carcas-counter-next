@@ -1,17 +1,19 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { ALL_ZONE_NUMBERS } from "@/data/carcas-zone-data";
+import { CONTAMINANT_KEYS } from "@/data/contaminants";
 import { ActionResponse, CarcasEntry } from "@/types/interfaces";
 import { RowDataPacket } from "mysql2";
 import { queries } from "@/db/queries";
 
 export async function getBatchByNumber(
-  batchNumber: string
+  batchNumber: string,
 ): Promise<ActionResponse<CarcasEntry[]>> {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
       queries.getHistoricDataForBatch,
-      [batchNumber]
+      [batchNumber],
     );
 
     return { success: true, data: rows as CarcasEntry[] };
@@ -60,7 +62,7 @@ export async function getTodaysBatches(): Promise<
 }
 
 export async function searchBatches(
-  query: string
+  query: string,
 ): Promise<ActionResponse<{ batch_number: string }[]>> {
   if (!query) return { success: true, data: [] };
   try {
@@ -77,8 +79,45 @@ export async function searchBatches(
   }
 }
 
+async function insertBatchZoneRows(
+  batchNumber: string,
+  zoneNumbers: readonly number[],
+  batchDate: Date = new Date(),
+): Promise<void> {
+  const values = zoneNumbers.map((zoneNumber) => [
+    batchDate,
+    batchNumber,
+    zoneNumber,
+    ...CONTAMINANT_KEYS.map(() => 0),
+  ]);
+
+  await db.query(queries.createNewBatch, [values]);
+}
+
+async function ensureTodaysBatch(batchNumber: string): Promise<void> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    queries.getTodaysBatchByNumber,
+    [batchNumber],
+  );
+
+  if (rows.length === 0) {
+    await insertBatchZoneRows(batchNumber, ALL_ZONE_NUMBERS);
+    return;
+  }
+
+  const existingZones = new Set(rows.map((row) => Number(row.zone_number)));
+  const missingZones = ALL_ZONE_NUMBERS.filter(
+    (zoneNumber) => !existingZones.has(zoneNumber),
+  );
+
+  if (missingZones.length === 0) return;
+
+  const batchDate = new Date(rows[0].date as string);
+  await insertBatchZoneRows(batchNumber, missingZones, batchDate);
+}
+
 export async function createNewBatch(
-  batchNumber: string
+  batchNumber: string,
 ): Promise<ActionResponse> {
   const existing = (await searchBatches(batchNumber))?.data || [];
   const exactMatch = existing.find((b) => b.batch_number === batchNumber);
@@ -88,24 +127,7 @@ export async function createNewBatch(
   }
 
   try {
-    const values = Array.from({ length: 8 }, (_, i) => [
-      new Date(),
-      batchNumber,
-      i + 1,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-    ]);
-
-    await db.query(queries.createNewBatch, [values]);
-
+    await insertBatchZoneRows(batchNumber, ALL_ZONE_NUMBERS);
     return { success: true };
   } catch (error) {
     console.error("Error creating batch:", error);
@@ -114,12 +136,14 @@ export async function createNewBatch(
 }
 
 export async function getBatchData(
-  batchNumber: string
+  batchNumber: string,
 ): Promise<ActionResponse<CarcasEntry[]>> {
   try {
+    await ensureTodaysBatch(batchNumber);
+
     const [rows] = await db.query<RowDataPacket[]>(
       queries.getTodaysBatchByNumber,
-      [batchNumber]
+      [batchNumber],
     );
     return { success: true, data: JSON.parse(JSON.stringify(rows)) };
   } catch (error) {
@@ -132,25 +156,16 @@ export async function updateCounterAction(
   id: number,
   counterName: string,
   increment: boolean,
-  amount: number
+  amount: number,
 ): Promise<ActionResponse<CarcasEntry>> {
   try {
     const change = increment ? amount : -amount;
 
-    const allowedColumns = [
-      "hair",
-      "faceal",
-      "grease_oil",
-      "metal",
-      "rail_dust",
-      "soft_plastic",
-      "hard_plastic",
-      "blood_clots",
-      "other",
-      "lymph_nodes",
-    ];
-
-    if (!allowedColumns.includes(counterName)) {
+    if (
+      !CONTAMINANT_KEYS.includes(
+        counterName as (typeof CONTAMINANT_KEYS)[number],
+      )
+    ) {
       throw new Error("Invalid column name");
     }
 

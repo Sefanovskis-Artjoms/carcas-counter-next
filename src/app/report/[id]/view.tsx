@@ -1,24 +1,13 @@
 "use client";
 
+import { CARCAS_PART_SELECT_OPTIONS } from "@/data/zone-display-names";
+import { CONTAMINANT_KEYS } from "@/data/contaminants";
 import { CarcasEntry } from "@/types/interfaces";
 import { useMemo, useState } from "react";
 import BatchTitle from "./_components/BatchTitle";
 import Carcas from "@/components/Carcas/Carcas";
 import Table from "@/components/Table/Table";
 import { useRouter, useSearchParams } from "next/navigation";
-
-const COUNTER_KEYS = [
-  "hair",
-  "faceal",
-  "grease_oil",
-  "metal",
-  "rail_dust",
-  "soft_plastic",
-  "hard_plastic",
-  "blood_clots",
-  "other",
-  "lymph_nodes",
-] as const;
 
 export default function HistoricView({
   initialData,
@@ -29,13 +18,14 @@ export default function HistoricView({
   const searchParams = useSearchParams();
 
   const [selectedDate, setSelectedDate] = useState<string>(
-    searchParams.get("date") || "summary"
+    searchParams.get("date") || "summary",
   );
+  const [selectedPart, setSelectedPart] = useState<"upper" | "lower">("upper");
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
 
   const uniqueDates = useMemo(() => {
     const allDates = initialData.map((entry) =>
-      new Date(entry.date).toLocaleDateString("en-gb")
+      new Date(entry.date).toLocaleDateString("en-gb"),
     );
     return Array.from(new Set(allDates));
   }, [initialData]);
@@ -44,7 +34,7 @@ export default function HistoricView({
     if (selectedDate !== "summary") {
       return initialData.filter(
         (entry) =>
-          new Date(entry.date).toLocaleDateString("en-gb") === selectedDate
+          new Date(entry.date).toLocaleDateString("en-gb") === selectedDate,
       );
     }
 
@@ -56,7 +46,7 @@ export default function HistoricView({
       if (!existingEntry) {
         aggregationMap.set(entry.zone_number, { ...entry });
       } else {
-        COUNTER_KEYS.forEach((key) => {
+        CONTAMINANT_KEYS.forEach((key) => {
           (existingEntry[key] as number) += entry[key] as number;
         });
       }
@@ -72,8 +62,8 @@ export default function HistoricView({
   };
 
   return (
-    <div className="flex-1 grid grid-rows-[auto_1fr]">
-      <div className="pb-[3.2rem]">
+    <div className="flex-1 grid grid-rows-[auto_1fr] max-h-screen w-full min-h-0">
+      <div className="pb-[1.8rem]">
         <div className="flex justify-between items-center mb-4">
           <BatchTitle />
           <button
@@ -108,11 +98,41 @@ export default function HistoricView({
           </div>
         )}
       </div>
-      <div className="flex-1 grid grid-cols-[auto_1fr] gap-[5.8rem]">
-        <div className="h-full m-auto pt-[4.8rem] pb-[3.2rem]">
-          <Carcas onZoneClick={handleZoneClick} />
+      <div className="flex gap-7 flex-1 min-h-0">
+        <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
+          <div className="w-fit ml-auto mr-auto flex gap-4">
+            {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
+              <button
+                key={value}
+                type="button"
+                title={title}
+                onClick={() => setSelectedPart(value)}
+                className={`btn ${
+                  selectedPart === value ? "btn--primary-light" : "btn--neutral"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 flex items-center justify-center py-[1.8rem] min-h-0 min-w-0 self-stretch">
+            <div className="w-full h-full min-h-0 min-w-0">
+              <Carcas
+                selectedCarcasPart={selectedPart}
+                onZoneClick={handleZoneClick}
+              />
+            </div>
+          </div>
         </div>
-        <Table data={tableData} highlightRow={highlightZone} />
+
+        <div className="flex-1 min-w-0">
+          <Table
+            data={tableData}
+            selectedCarcasPart={selectedPart}
+            highlightRow={highlightZone}
+          />
+        </div>
       </div>
     </div>
   );
