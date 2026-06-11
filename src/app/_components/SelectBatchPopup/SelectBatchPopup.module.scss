@@ -1,9 +1,8 @@
 .popup {
   position: absolute;
   z-index: 20;
-  top: 140%;
-  left: 50%;
-  transform: translateX(-52.5%);
+  top: calc(100% + 0.8rem);
+  left: 0;
   width: 52rem;
   background-color: var(--color-background);
   border-radius: var(--border-radius-regular);

@@ -110,9 +110,6 @@
 }
 
 .icon {
-  width: 2.4rem;
-  height: 2.4rem;
-
   svg {
     width: 100%;
     height: 100%;
@@ -133,28 +130,20 @@
     fill: var(--color-icon-grease);
   }
 
-  &.metal {
-    height: 2.8rem;
-    fill: var(--color-icon-metal);
-  }
-
   &.rail-dust {
     height: 2.9rem;
-    fill: var(--color-icon-metal);
-  }
-
-  &.soft-plastic {
-    height: 2.6rem;
-    fill: var(--color-icon-plastic);
-  }
-
-  &.hard-plastic {
-    fill: var(--color-icon-plastic);
+    fill: var(--color-icon-rail-dust);
   }
 
   &.blood-clots {
     height: 2rem;
     fill: var(--color-icon-blood);
+  }
+
+  &.foreign-object {
+    height: 2.6rem;
+    fill: var(--color-icon-foreign-object);
+    color: var(--color-icon-foreign-object);
   }
 
   &.other {

@@ -1,3 +1,5 @@
+@use "@/styles/breakpoints" as *;
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -9,6 +11,10 @@
 html {
   box-sizing: border-box;
   font-size: 62.5%;
+
+  @media (max-width: $bp-xlg) {
+    font-size: 56.25%;
+  }
 }
 
 html,

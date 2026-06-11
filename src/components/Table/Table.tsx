@@ -133,6 +133,11 @@ export default function Table({
               <Icon
                 name={col.iconKey}
                 className={`${styles.icon} ${styles[col.iconKey]}`}
+                style={
+                  "iconSize" in col
+                    ? { width: col.iconSize, height: col.iconSize }
+                    : undefined
+                }
               />
               <span>{col.displayName}</span>
             </div>

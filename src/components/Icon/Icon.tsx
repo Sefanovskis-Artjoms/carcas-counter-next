@@ -3,9 +3,11 @@ import { ICON_MAP, IconName } from "@/data/icon-data";
 export default function Icon({
   name,
   className,
+  style,
 }: {
   name: IconName;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   const svgString = ICON_MAP[name];
 
@@ -21,6 +23,7 @@ export default function Icon({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        ...style,
       }}
       dangerouslySetInnerHTML={{ __html: svgString }}
     />
