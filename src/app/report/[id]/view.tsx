@@ -7,14 +7,15 @@ import { useMemo, useState } from "react";
 import BatchTitle from "./_components/BatchTitle";
 import Carcas from "@/components/Carcas/Carcas";
 import Table from "@/components/Table/Table";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useAppBack } from "@/components/InternalNavigationTracker/InternalNavigationTracker";
+import { useSearchParams } from "next/navigation";
 
 export default function HistoricView({
   initialData,
 }: {
   initialData: CarcasEntry[];
 }) {
-  const router = useRouter();
+  const handleBack = useAppBack();
   const searchParams = useSearchParams();
 
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -77,7 +78,7 @@ export default function HistoricView({
             </button>
           </div>
           <button
-            onClick={() => router.back()}
+            onClick={handleBack}
             className="btn btn--color-neutral shrink-0"
           >
             Back

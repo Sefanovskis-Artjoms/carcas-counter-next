@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { useAppBack } from "@/components/InternalNavigationTracker/InternalNavigationTracker";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Spinner from "@/components/Spinner/Spinner";
 import { getAllHistoryItems } from "@/actions/batch-actions";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ export default function HistoryView({
   initialData?: { date: string; batch_number: string }[];
 }) {
   const router = useRouter();
+  const handleBack = useAppBack();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -273,10 +275,7 @@ export default function HistoryView({
           </button>
         </form>
 
-        <button
-          onClick={() => router.back()}
-          className="btn btn--color-neutral"
-        >
+        <button onClick={handleBack} className="btn btn--color-neutral">
           Back
         </button>
       </div>
