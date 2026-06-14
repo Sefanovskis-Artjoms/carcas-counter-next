@@ -15,8 +15,12 @@ export default function HistoricView({
 }: {
   initialData: CarcasEntry[];
 }) {
+  // MARK: Hooks
+
   const handleBack = useAppBack();
   const searchParams = useSearchParams();
+
+  // MARK: State
 
   const [selectedDate, setSelectedDate] = useState<string>(
     searchParams.get("date") || "summary",
@@ -24,6 +28,8 @@ export default function HistoricView({
   const [selectedPart, setSelectedPart] = useState<"upper" | "lower">("upper");
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
   const [isCarcasVisible, setIsCarcasVisible] = useState(true);
+
+  // MARK: Derived values
 
   const uniqueDates = useMemo(() => {
     const allDates = initialData.map((entry) =>
@@ -56,6 +62,8 @@ export default function HistoricView({
     return Array.from(aggregationMap.values());
   }, [initialData, selectedDate]);
 
+  // MARK: Event handlers
+
   const handleZoneClick = (zoneNumber: number) => {
     setHighlightZone(zoneNumber);
     setTimeout(() => {
@@ -63,8 +71,11 @@ export default function HistoricView({
     }, 20);
   };
 
+  // MARK: HTML
+
   return (
     <div className="flex-1 grid grid-rows-[auto_1fr] max-h-screen w-full min-h-0">
+      {/* MARK: Header & date tabs */}
       <div className="pb-[1.8rem]">
         <div className="flex justify-between items-center mb-4 gap-4">
           <div className="flex items-center gap-4 min-w-0">
@@ -109,9 +120,12 @@ export default function HistoricView({
           </div>
         )}
       </div>
+      {/* MARK: Main content */}
       <div className="flex gap-7 flex-1 min-h-0">
         {isCarcasVisible && (
         <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
+          {/* MARK: Carcas sidebar */}
+          {/* MARK: Part selector (FQ / HQ) */}
           <div className="w-fit ml-auto mr-auto flex gap-4">
             {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
               <button
@@ -128,6 +142,7 @@ export default function HistoricView({
             ))}
           </div>
 
+          {/* MARK: Carcas diagram */}
           <div className="flex-1 flex items-center justify-center py-[1.8rem] min-h-0 min-w-0 self-stretch">
             <div className="w-full h-full min-h-0 min-w-0">
               <Carcas
@@ -139,6 +154,7 @@ export default function HistoricView({
         </div>
         )}
 
+        {/* MARK: Data table */}
         <div className="flex-1 min-w-0">
           <Table
             data={tableData}

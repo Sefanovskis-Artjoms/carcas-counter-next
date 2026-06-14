@@ -3,9 +3,13 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 
+// MARK: Constants
+
 const NAV_STACK_KEY = "app-nav-stack";
 
 type Router = ReturnType<typeof useRouter>;
+
+// MARK: Session storage helpers
 
 function getStack(): string[] {
   try {
@@ -46,10 +50,14 @@ function navigateBack(router: Router, fallback = "/"): void {
   router.push(fallback);
 }
 
+// MARK: Hooks
+
 export function useAppBack(fallback = "/") {
   const router = useRouter();
   return () => navigateBack(router, fallback);
 }
+
+// MARK: Tracker component
 
 export default function InternalNavigationTracker() {
   const pathname = usePathname();

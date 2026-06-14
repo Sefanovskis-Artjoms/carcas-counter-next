@@ -2,10 +2,10 @@ import { Suspense } from "react";
 import Spinner from "@/components/Spinner/Spinner";
 import HistoryView from "./HistoryView";
 import { getAllHistoryItems } from "@/actions/batch-actions";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "History | Mans Projekts",
+  title: "History",
 };
 
 export default async function HistoryPage() {

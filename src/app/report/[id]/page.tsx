@@ -1,5 +1,18 @@
+import type { Metadata } from "next";
 import { getBatchByNumber } from "@/actions/batch-actions";
 import HistoricView from "./view";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  return {
+    title: `Report for ${id}`,
+  };
+}
 
 export default async function ReportPage({
   params,

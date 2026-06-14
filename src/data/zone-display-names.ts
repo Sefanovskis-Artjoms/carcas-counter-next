@@ -1,6 +1,10 @@
 import { CarcasPart, CarcasZoneNumber } from "./carcas-zone-data";
 
+// MARK: Types
+
 export type CarcasSelectablePart = Exclude<CarcasPart, "whole">;
+
+// MARK: UI options
 
 export const CARCAS_PART_SELECT_OPTIONS: {
   value: CarcasSelectablePart;
@@ -10,6 +14,8 @@ export const CARCAS_PART_SELECT_OPTIONS: {
   { value: "upper", label: "FQ", title: "Fore quarter" },
   { value: "lower", label: "HQ", title: "Hind quarter" },
 ];
+
+// MARK: Zone labels
 
 export const ZONE_DISPLAY_NAMES: Record<CarcasZoneNumber, string> = {
   1: "Shin",
@@ -42,6 +48,8 @@ export const ZONE_LETTERS: Record<CarcasZoneNumber, string> = {
   12: "L",
   13: "M",
 };
+
+// MARK: Helpers
 
 export function getZoneDisplayLabel(zoneNumber: number): string {
   const zone = zoneNumber as CarcasZoneNumber;

@@ -9,10 +9,14 @@ import {
   createNewBatch,
 } from "@/actions/batch-actions";
 
+// MARK: Types
+
 interface PopupProps {
   onClose: () => void;
   onSelectBatch: (batchNumber: string) => void;
 }
+
+// MARK: Constants
 
 const MAX_SEARCH_RESULTS = 12;
 
@@ -20,7 +24,11 @@ export default function SelectBatchPopup({
   onClose,
   onSelectBatch,
 }: PopupProps) {
+  // MARK: Refs
+
   const popupRef = useRef<HTMLDivElement>(null);
+
+  // MARK: State
 
   const [inputValue, setInputValue] = useState("");
   const [todayBatches, setTodayBatches] = useState<{ batch_number: string }[]>(
@@ -37,6 +45,8 @@ export default function SelectBatchPopup({
   const [previousSearchQuery, setPreviousSearchQuery] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
   const [isError, setIsError] = useState(false);
+
+  // MARK: Effects
 
   useEffect(() => {
     const fetchToday = async () => {
@@ -68,6 +78,8 @@ export default function SelectBatchPopup({
       document.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
+
+  // MARK: Event handlers
 
   const handleSearch = async () => {
     const query = inputValue.trim();
@@ -170,10 +182,15 @@ export default function SelectBatchPopup({
     }
   };
 
+  // MARK: Derived values
+
   const displayedResults = searchResults.slice(0, MAX_SEARCH_RESULTS);
+
+  // MARK: HTML
 
   return (
     <div className={styles.popup} ref={popupRef}>
+      {/* MARK: Header */}
       <div className="flex justify-between items-center pl-4 border-b border-border bg-gray-200">
         <span className="text-2xl">Select or create batch</span>
         <button
@@ -185,6 +202,7 @@ export default function SelectBatchPopup({
       </div>
 
       <div className="p-4.5">
+        {/* MARK: Search & create form */}
         <div className="flex gap-3 pb-4">
           <input
             id="batchInput"
@@ -205,6 +223,7 @@ export default function SelectBatchPopup({
           </button>
         </div>
 
+        {/* MARK: Search results */}
         {!isSearchLoading ? (
           <>
             {searchMessage && (
@@ -233,6 +252,7 @@ export default function SelectBatchPopup({
           </div>
         )}
 
+        {/* MARK: Today's batches */}
         <p className="font-semibold py-4">Today&apos;s batches:</p>
 
         {todayError ? (

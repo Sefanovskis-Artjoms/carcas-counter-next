@@ -7,6 +7,8 @@ import { ActionResponse, CarcasEntry } from "@/types/interfaces";
 import { RowDataPacket } from "mysql2";
 import { queries } from "@/db/queries";
 
+// MARK: Read queries
+
 export async function getBatchByNumber(
   batchNumber: string,
 ): Promise<ActionResponse<CarcasEntry[]>> {
@@ -79,6 +81,78 @@ export async function searchBatches(
   }
 }
 
+export async function getBatchData(
+  batchNumber: string,
+): Promise<ActionResponse<CarcasEntry[]>> {
+  try {
+    await ensureTodaysBatch(batchNumber);
+
+    const [rows] = await db.query<RowDataPacket[]>(
+      queries.getTodaysBatchByNumber,
+      [batchNumber],
+    );
+    return { success: true, data: JSON.parse(JSON.stringify(rows)) };
+  } catch (error) {
+    console.error("Error fetching batch data:", error);
+    return { success: false, error: "Database error" };
+  }
+}
+
+// MARK: Batch lifecycle
+
+export async function createNewBatch(
+  batchNumber: string,
+): Promise<ActionResponse> {
+  const existing = (await searchBatches(batchNumber))?.data || [];
+  const exactMatch = existing.find((b) => b.batch_number === batchNumber);
+
+  if (exactMatch) {
+    return { success: false, message: "Batch number already exists" };
+  }
+
+  try {
+    await insertBatchZoneRows(batchNumber, ALL_ZONE_NUMBERS);
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating batch:", error);
+    return { success: false, message: "Database error" };
+  }
+}
+
+// MARK: Mutations
+
+export async function updateCounterAction(
+  id: number,
+  counterName: string,
+  increment: boolean,
+  amount: number,
+): Promise<ActionResponse<CarcasEntry>> {
+  try {
+    const change = increment ? amount : -amount;
+
+    if (
+      !CONTAMINANT_KEYS.includes(
+        counterName as (typeof CONTAMINANT_KEYS)[number],
+      )
+    ) {
+      throw new Error("Invalid column name");
+    }
+
+    await db.query(queries.updateCounter(counterName), [change, id]);
+
+    const [rows] = await db.query<RowDataPacket[]>(queries.getRowById, [id]);
+
+    const updatedRow = rows[0];
+
+    return { success: true, data: JSON.parse(JSON.stringify(updatedRow)) };
+  } catch (error) {
+    console.error("Error updating counter:", error);
+    return { success: false, error: "Database error" };
+  }
+}
+
+// MARK: Private helpers
+
 async function insertBatchZoneRows(
   batchNumber: string,
   zoneNumbers: readonly number[],
@@ -114,70 +188,4 @@ async function ensureTodaysBatch(batchNumber: string): Promise<void> {
 
   const batchDate = new Date(rows[0].date as string);
   await insertBatchZoneRows(batchNumber, missingZones, batchDate);
-}
-
-export async function createNewBatch(
-  batchNumber: string,
-): Promise<ActionResponse> {
-  const existing = (await searchBatches(batchNumber))?.data || [];
-  const exactMatch = existing.find((b) => b.batch_number === batchNumber);
-
-  if (exactMatch) {
-    return { success: false, message: "Batch number already exists" };
-  }
-
-  try {
-    await insertBatchZoneRows(batchNumber, ALL_ZONE_NUMBERS);
-    return { success: true };
-  } catch (error) {
-    console.error("Error creating batch:", error);
-    return { success: false, message: "Database error" };
-  }
-}
-
-export async function getBatchData(
-  batchNumber: string,
-): Promise<ActionResponse<CarcasEntry[]>> {
-  try {
-    await ensureTodaysBatch(batchNumber);
-
-    const [rows] = await db.query<RowDataPacket[]>(
-      queries.getTodaysBatchByNumber,
-      [batchNumber],
-    );
-    return { success: true, data: JSON.parse(JSON.stringify(rows)) };
-  } catch (error) {
-    console.error("Error fetching batch data:", error);
-    return { success: false, error: "Database error" };
-  }
-}
-
-export async function updateCounterAction(
-  id: number,
-  counterName: string,
-  increment: boolean,
-  amount: number,
-): Promise<ActionResponse<CarcasEntry>> {
-  try {
-    const change = increment ? amount : -amount;
-
-    if (
-      !CONTAMINANT_KEYS.includes(
-        counterName as (typeof CONTAMINANT_KEYS)[number],
-      )
-    ) {
-      throw new Error("Invalid column name");
-    }
-
-    await db.query(queries.updateCounter(counterName), [change, id]);
-
-    const [rows] = await db.query<RowDataPacket[]>(queries.getRowById, [id]);
-
-    const updatedRow = rows[0];
-
-    return { success: true, data: JSON.parse(JSON.stringify(updatedRow)) };
-  } catch (error) {
-    console.error("Error updating counter:", error);
-    return { success: false, error: "Database error" };
-  }
 }

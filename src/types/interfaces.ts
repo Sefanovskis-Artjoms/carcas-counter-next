@@ -1,5 +1,6 @@
 import { CarcasZoneNumber } from "@/data/carcas-zone-data";
-import { ContaminantKey } from "@/data/contaminants";
+
+// MARK: Domain models
 
 export interface CarcasEntry {
   id: number;
@@ -25,12 +26,16 @@ export interface UpdateCounterPayload {
   increment: boolean;
 }
 
+// MARK: API responses
+
 export interface ActionResponse<T = void> {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
 }
+
+// MARK: Socket events
 
 export interface ServerToClientEvents {
   refresh_table: () => void;

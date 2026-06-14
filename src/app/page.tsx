@@ -1,6 +1,19 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Spinner from "@/components/Spinner/Spinner";
 import HomeView from "./HomeView";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ batch?: string }>;
+}): Promise<Metadata> {
+  const { batch } = await searchParams;
+
+  return {
+    title: batch ? `Inspecting ${batch}` : "Carcas Counter",
+  };
+}
 
 export default function Page() {
   return (

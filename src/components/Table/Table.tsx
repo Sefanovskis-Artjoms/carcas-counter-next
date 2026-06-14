@@ -14,6 +14,8 @@ import Spinner from "../Spinner/Spinner";
 
 const HIGHLIGHT_DURATION = 500;
 
+// MARK: Props
+
 export default function Table({
   data = [],
   selectedCarcasPart = "whole",
@@ -42,8 +44,12 @@ export default function Table({
   isDisabled?: boolean;
   centeredMessage?: string;
 }) {
+  // MARK: State & refs
+
   const [highlightedIds, setHighlightedIds] = useState<number[]>([]);
   const timersMap = useRef<Map<number, NodeJS.Timeout>>(new Map());
+
+  // MARK: Derived values
 
   const activeZoneNumbers = useMemo(
     () => getZonesForPart(selectedCarcasPart),
@@ -69,6 +75,8 @@ export default function Table({
       };
     });
   }, [data, activeZoneNumbers]);
+
+  // MARK: Effects
 
   useEffect(() => {
     if (highlightRow === null) return;
@@ -99,6 +107,8 @@ export default function Table({
     isDisabled || isLoading ? "opacity-50 pointer-events-none" : "";
   const isWholeMode = selectedCarcasPart === "whole";
 
+  // MARK: HTML
+
   return (
     <div
       className={`${styles.container} ${isWholeMode ? styles.wholeMode : ""} w-full h-full relative gap-x-[0.6rem] gap-y-[0.4rem]`}
@@ -107,10 +117,12 @@ export default function Table({
         gridTemplateRows: `max-content repeat(${CONTAMINANT_COLUMNS.length}, 1fr)`,
       }}
     >
+      {/* MARK: Top-left corner cell */}
       <div
         className={`flex w-full h-full items-center justify-center text-[2rem] text-text-regular ${contentOpacityClass}`}
       ></div>
 
+      {/* MARK: Zone headers */}
       {normalizedData.map((entry, zoneIndex) => (
         <div
           key={entry.id}
@@ -124,6 +136,7 @@ export default function Table({
         </div>
       ))}
 
+      {/* MARK: Contaminant rows & cells */}
       {CONTAMINANT_COLUMNS.map((col) => (
         <Fragment key={col.key}>
           <div
@@ -202,6 +215,7 @@ export default function Table({
         </Fragment>
       ))}
 
+      {/* MARK: Loading / empty overlay */}
       {(isLoading || centeredMessage) && (
         <div
           className="absolute z-20 flex items-center justify-center w-full h-full pointer-events-none"

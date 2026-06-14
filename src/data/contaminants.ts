@@ -1,3 +1,5 @@
+// MARK: Column definitions
+
 export const CONTAMINANT_COLUMNS = [
   { key: "hair", displayName: "Hair", iconKey: "hair" },
   {
@@ -46,7 +48,11 @@ export const CONTAMINANT_COLUMNS = [
   },
 ] as const;
 
+// MARK: Types
+
 export type ContaminantKey = (typeof CONTAMINANT_COLUMNS)[number]["key"];
+
+// MARK: Keys & helpers
 
 export const CONTAMINANT_KEYS: ContaminantKey[] = CONTAMINANT_COLUMNS.map(
   (column) => column.key

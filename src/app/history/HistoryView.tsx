@@ -13,6 +13,8 @@ export default function HistoryView({
 }: {
   initialData?: { date: string; batch_number: string }[];
 }) {
+  // MARK: Hooks & refs
+
   const router = useRouter();
   const handleBack = useAppBack();
   const pathname = usePathname();
@@ -20,10 +22,14 @@ export default function HistoryView({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // MARK: URL params
+
   const initialPage = Number(searchParams.get("page")) || 1;
   const initialDateFrom = searchParams.get("dateFrom") || "";
   const initialDateTo = searchParams.get("dateTo") || "";
   const initialBatch = searchParams.get("batch_number") || "";
+
+  // MARK: State
 
   const [inputs, setInputs] = useState({
     dateFrom: initialDateFrom,
@@ -39,15 +45,9 @@ export default function HistoryView({
 
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(15);
-
   const [isRetrying, setIsRetrying] = useState(false);
 
-  const handleRetry = async () => {
-    setIsRetrying(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    await refetch();
-    setIsRetrying(false);
-  };
+  // MARK: Data fetching
 
   const {
     data: allData = [],
@@ -66,6 +66,8 @@ export default function HistoryView({
     initialData: initialData,
     staleTime: 1000 * 60 * 15,
   });
+
+  // MARK: Layout helpers
 
   const recalcPageSize = useCallback(() => {
     const wrapper = wrapperRef.current;
@@ -105,13 +107,15 @@ export default function HistoryView({
 
     const rows = Math.max(
       1,
-      Math.floor((containerHeight + rowGap) / (itemH + rowGap))
+      Math.floor((containerHeight + rowGap) / (itemH + rowGap)),
     );
 
     const nextPageSize = Math.max(1, rows * colCount);
 
     setPageSize((prev) => (prev !== nextPageSize ? nextPageSize : prev));
   }, []);
+
+  // MARK: Effects
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -143,6 +147,8 @@ export default function HistoryView({
 
     router.replace(url, { scroll: false });
   }, [filters, currentPage, pathname, router]);
+
+  // MARK: Derived values
 
   const filteredItems = useMemo(() => {
     const { dateFrom, dateTo, batchNumber } = filters;
@@ -203,10 +209,15 @@ export default function HistoryView({
     ].filter((val) => val !== null);
   }, [maxPageCount, currentPage]);
 
+  // MARK: Event handlers
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters(inputs);
     setCurrentPage(1);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   const switchPage = (page: number) => {
@@ -215,10 +226,21 @@ export default function HistoryView({
     }
   };
 
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await refetch();
+    setIsRetrying(false);
+  };
+
+  // MARK: HTML
+
   return (
     <div className="flex-1 grid grid-rows-[auto_1fr_auto] max-h-screen w-full min-h-0">
+      {/* MARK: Filter bar */}
       <div className="w-full mx-auto flex justify-between items-start pb-[3.2rem]">
         <form className="flex items-start gap-[1.8rem]" onSubmit={handleSearch}>
+          {/* MARK: Date range inputs */}
           <div className="flex flex-col gap-[1.2rem] w-max">
             <div className="flex gap-[0.9rem] justify-between items-center">
               <label htmlFor="dateFrom">Date from:</label>
@@ -246,10 +268,13 @@ export default function HistoryView({
             </div>
           </div>
 
+          {/* MARK: Batch number & actions */}
           <input
             type="text"
             className="input w-68"
             placeholder="Batch number"
+            enterKeyHint="search"
+            inputMode="numeric"
             value={inputs.batchNumber}
             onChange={(e) =>
               setInputs((prev) => ({
@@ -280,10 +305,12 @@ export default function HistoryView({
         </button>
       </div>
 
+      {/* MARK: Batch list */}
       <div
         className="relative w-full max-w-500 h-full min-h-0 mx-auto flex justify-start overflow-hidden"
         ref={wrapperRef}
       >
+        {/* MARK: Error overlay */}
         {isError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-[1.2rem] z-10 bg-background/90">
             <p className="text-4xl text-red-500 font-medium pb-8">
@@ -300,6 +327,7 @@ export default function HistoryView({
           </div>
         )}
 
+        {/* MARK: Results grid */}
         <ul className="h-full min-h-0 w-min mx-auto list-none grid grid-cols-[repeat(4,max-content)] auto-rows-max justify-items-start gap-x-[1.2rem] gap-y-[1.8rem] max-[68.75em]:grid-cols-[repeat(3,max-content)]">
           {!isLoading &&
             !isError &&
@@ -310,7 +338,7 @@ export default function HistoryView({
               >
                 <Link
                   href={`/report/${item.batch_number}?date=${new Date(
-                    item.date
+                    item.date,
                   ).toLocaleDateString("en-GB")}`}
                   className="btn inline-block w-full text-center"
                 >
@@ -324,6 +352,7 @@ export default function HistoryView({
           )}
         </ul>
 
+        {/* MARK: Loading spinner */}
         {isLoading && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <Spinner size={60} />
@@ -331,6 +360,7 @@ export default function HistoryView({
         )}
       </div>
 
+      {/* MARK: Pagination */}
       {maxPageCount > 1 && (
         <div className="pt-[1.8rem] w-fit mx-auto mt-auto flex gap-[0.8rem]">
           <button
@@ -379,7 +409,7 @@ export default function HistoryView({
                 className="btn btn--color-neutral ml-4"
                 onClick={() => {
                   const el = document.getElementById(
-                    "goToPageInput"
+                    "goToPageInput",
                   ) as HTMLInputElement;
                   if (el) switchPage(Number(el.value));
                 }}
@@ -396,6 +426,7 @@ export default function HistoryView({
                 onKeyDown={(e) => {
                   if (e.key !== "Enter") return;
                   switchPage(Number(e.currentTarget.value || 1));
+                  e.currentTarget.blur();
                 }}
               />
             </>

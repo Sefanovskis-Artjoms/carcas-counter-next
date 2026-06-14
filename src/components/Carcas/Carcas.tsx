@@ -9,6 +9,8 @@ import {
   CarcasZoneNumber,
 } from "@/data/carcas-zone-data";
 
+// MARK: Types
+
 type CarcasPart = "upper" | "lower" | "whole";
 
 interface CarcasProps {
@@ -16,6 +18,8 @@ interface CarcasProps {
   selectedCarcasPart?: CarcasPart;
   onZoneClick?: (zoneNumber: number) => void;
 }
+
+// MARK: Subcomponents
 
 function CarcasPartSection({
   config,
@@ -41,6 +45,7 @@ function CarcasPartSection({
 
   return (
     <div className={styles.partSection} style={partStyle}>
+      {/* MARK: Zone pieces */}
       {config.zoneNumbers.map((zoneNum) => {
         const labels = config.labels as Record<CarcasZoneNumber, CarcasZoneLabel>;
         const paths = config.paths as Record<CarcasZoneNumber, string>;
@@ -82,6 +87,8 @@ function CarcasPartSection({
   );
 }
 
+// MARK: Main component
+
 export default function Carcas({
   isDisabled = false,
   selectedCarcasPart = "whole",
@@ -94,10 +101,13 @@ export default function Carcas({
 
   const isWhole = selectedCarcasPart === "whole";
 
+  // MARK: HTML
+
   return (
     <div
       className={isWhole ? styles.containerWhole : styles.container}
     >
+      {/* MARK: Carcas parts (upper / lower) */}
       {partsToRender.map((part) => (
         <CarcasPartSection
           key={part}

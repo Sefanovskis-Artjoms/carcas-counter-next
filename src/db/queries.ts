@@ -1,11 +1,13 @@
+// MARK: Today's batch
+
 export const queries = {
   getTodaysBatchByNumber: `select * from maintable where date = CURDATE() and batch_number = ?`,
-
-  getRowById: `select * from maintable where id = ?`,
 
   getTodaysBatches: `
     SELECT DISTINCT batch_number FROM maintable WHERE date = CURDATE()
   `,
+
+  // MARK: History
 
   getHistoryData: `
     SELECT date, batch_number 
@@ -13,6 +15,21 @@ export const queries = {
     GROUP BY date, batch_number 
     ORDER BY date DESC
   `,
+
+  getHistoricDataForBatch: `
+    SELECT * FROM maintable 
+    WHERE batch_number = ? 
+    ORDER BY date DESC, zone_number ASC
+  `,
+
+  getBatchSearch: `
+    SELECT DISTINCT batch_number 
+    FROM maintable 
+    WHERE batch_number LIKE CONCAT('%', ?, '%')
+    ORDER BY date DESC
+  `,
+
+  // MARK: Writes
 
   createNewBatch: `
     INSERT INTO maintable 
@@ -26,16 +43,7 @@ export const queries = {
     WHERE id = ?
   `,
 
-  getBatchSearch: `
-    SELECT DISTINCT batch_number 
-    FROM maintable 
-    WHERE batch_number LIKE CONCAT('%', ?, '%')
-    ORDER BY date DESC
-  `,
+  // MARK: Row lookup
 
-  getHistoricDataForBatch: `
-    SELECT * FROM maintable 
-    WHERE batch_number = ? 
-    ORDER BY date DESC, zone_number ASC
-  `,
+  getRowById: `select * from maintable where id = ?`,
 };

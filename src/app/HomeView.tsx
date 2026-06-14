@@ -18,11 +18,15 @@ import {
   ServerToClientEvents,
 } from "@/types/interfaces";
 
+// MARK: Types
+
 type MutationContext = {
   previousData: CarcasEntry[] | undefined;
 };
 
 export default function HomeView() {
+  // MARK: Hooks & refs
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -32,7 +36,12 @@ export default function HomeView() {
     ServerToClientEvents,
     ClientToServerEvents
   > | null>(null);
+
+  // MARK: URL params
+
   const selectedBatchNumber = searchParams.get("batch");
+
+  // MARK: State
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isIncreaseMode, setIsIncreaseMode] = useState(true);
@@ -42,31 +51,11 @@ export default function HomeView() {
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
   const [isCarcasVisible, setIsCarcasVisible] = useState(true);
 
+  // MARK: Derived values
+
   const showCarcasPanel = !selectedBatchNumber || isCarcasVisible;
 
-  useEffect(() => {
-    if (!selectedBatchNumber) {
-      socketRef.current?.disconnect();
-      return;
-    }
-
-    socketRef.current = io();
-    const socket = socketRef.current;
-
-    socket.on("connect", () => {
-      socket.emit("join_batch", selectedBatchNumber);
-    });
-
-    socket.on("refresh_table", () => {
-      queryClient.invalidateQueries({
-        queryKey: ["batchData", selectedBatchNumber],
-      });
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [selectedBatchNumber, queryClient]);
+  // MARK: Data fetching
 
   const {
     data: batchData = [],
@@ -85,28 +74,7 @@ export default function HomeView() {
     staleTime: 1000 * 60,
   });
 
-  const handleBatchSelect = (batchNumber: string) => {
-    router.replace(`/?batch=${batchNumber}`);
-    setIsPopupOpen(false);
-  };
-
-  const onSetNewAmount = (newAmount: string) => {
-    if (!newAmount) return;
-    const value = Number(newAmount);
-    if (isNaN(value) || value < 1 || !Number.isInteger(value)) return;
-    setUpdateAmount(value);
-    setIsClickAmountChanging(false);
-  };
-
-  const handleZoneClick = (zoneNumber: number) => {
-    // NOTE: setHighlightZone(null) is called to allow registering repeated clicks on the same zone
-    // and it is wrapped with a set timeout of 20ms because react can batch state updates
-    // and 20ms was chosen because it is next round number after one frame update which happens every ~16ms
-    setHighlightZone(zoneNumber);
-    setTimeout(() => {
-      setHighlightZone(null);
-    }, 20);
-  };
+  // MARK: Mutations
 
   const { mutate: handleValueUpdate } = useMutation<
     ActionResponse<CarcasEntry>,
@@ -175,8 +143,77 @@ export default function HomeView() {
     },
   });
 
+  // MARK: Effects
+
+  useEffect(() => {
+    document.title = selectedBatchNumber
+      ? `Inspecting ${selectedBatchNumber}`
+      : "Carcas Counter";
+  }, [selectedBatchNumber]);
+
+  useEffect(() => {
+    if (!selectedBatchNumber) {
+      socketRef.current?.disconnect();
+      return;
+    }
+
+    socketRef.current = io();
+    const socket = socketRef.current;
+
+    socket.on("connect", () => {
+      socket.emit("join_batch", selectedBatchNumber);
+    });
+
+    socket.on("refresh_table", () => {
+      queryClient.invalidateQueries({
+        queryKey: ["batchData", selectedBatchNumber],
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [selectedBatchNumber, queryClient]);
+
+  // MARK: Event handlers
+
+  const handleBatchSelect = (batchNumber: string) => {
+    router.replace(`/?batch=${batchNumber}`);
+    setIsPopupOpen(false);
+  };
+
+  const onSetNewAmount = (newAmount: string) => {
+    if (!newAmount) return;
+    const value = Number(newAmount);
+    if (isNaN(value) || value < 1 || !Number.isInteger(value)) return;
+    setUpdateAmount(value);
+    setIsClickAmountChanging(false);
+  };
+
+  const handleAmountSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputRef.current) {
+      onSetNewAmount(inputRef.current.value);
+      inputRef.current.value = "";
+      inputRef.current.blur();
+    }
+  };
+
+  const handleZoneClick = (zoneNumber: number) => {
+    // NOTE: setHighlightZone(null) is called to allow registering repeated clicks on the same zone
+    // and it is wrapped with a set timeout of 20ms because react can batch state updates
+    // and 20ms was chosen because it is next round number after one frame update which happens every ~16ms
+    setHighlightZone(zoneNumber);
+    setTimeout(() => {
+      setHighlightZone(null);
+    }, 20);
+  };
+
+  // MARK: HTML
+
   return (
     <div className="flex-1 grid grid-rows-[auto_1fr] max-h-screen w-full min-h-0">
+      {/* MARK: Toolbar */}
       <div className="flex items-center gap-[0.8rem] pb-[1.8rem]">
         {isIncreaseMode ? (
           <button
@@ -234,9 +271,12 @@ export default function HomeView() {
           View History
         </Link>
       </div>
+      {/* MARK: Main content */}
       <div className="flex gap-7 flex-1 min-h-0">
         {showCarcasPanel && (
           <div className="flex flex-col gap-4 w-60 shrink-0 min-h-0">
+            {/* MARK: Carcas sidebar */}
+            {/* MARK: Part selector (FQ / HQ) */}
             <div className="w-fit ml-auto mr-auto flex gap-4">
               {CARCAS_PART_SELECT_OPTIONS.map(({ value, label, title }) => (
                 <button
@@ -256,6 +296,7 @@ export default function HomeView() {
               ))}
             </div>
 
+            {/* MARK: Carcas diagram */}
             <div className="flex-1 flex items-center justify-center py-4 min-h-0 min-w-0 self-stretch">
               <div className="w-full h-full min-h-0 min-w-0">
                 <Carcas
@@ -266,27 +307,22 @@ export default function HomeView() {
               </div>
             </div>
 
+            {/* MARK: Click amount controls */}
             <div className="w-60 mx-auto flex flex-col gap-4.5">
               {isClickAmountChanging ? (
-                <>
+                <form className="flex flex-col gap-4.5" onSubmit={handleAmountSubmit}>
                   <input
                     ref={inputRef}
                     className="py-2 px-4 border border-border rounded-[0.3rem]"
                     placeholder="Amount"
                     type="number"
+                    enterKeyHint="done"
                   />
-                  <button
-                    onClick={() => {
-                      if (inputRef.current) {
-                        onSetNewAmount(inputRef.current.value);
-                        inputRef.current.value = "";
-                      }
-                    }}
-                    className="btn btn--approve w-full"
-                  >
+                  <button type="submit" className="btn btn--approve w-full">
                     Set new amount
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       setIsClickAmountChanging(false);
                       if (inputRef.current) {
@@ -297,7 +333,7 @@ export default function HomeView() {
                   >
                     Cancel
                   </button>
-                </>
+                </form>
               ) : (
                 <button
                   onClick={() => setIsClickAmountChanging(true)}
@@ -311,6 +347,7 @@ export default function HomeView() {
           </div>
         )}
 
+        {/* MARK: Data table */}
         <div className="flex-1 min-w-0">
           <Table
             data={batchData}
