@@ -26,6 +26,7 @@ Copy `.env.example` to `.env` and set:
 |---------------|----------------------------|
 | `HOSTNAME`    | Server hostname (`localhost`) |
 | `PORT`        | Port (e.g. `3000`)         |
+| `APP_ORIGIN`  | Optional. Browser origin allowed for Socket.IO. Defaults to `http://HOSTNAME:PORT`. Set to the URL users open in the browser when deploying on a LAN IP (e.g. `http://192.168.1.50:3000`). |
 | `DB_HOST`     | MySQL host                 |
 | `DB_USER`     | MySQL user                 |
 | `DB_PASSWORD` | MySQL password             |
