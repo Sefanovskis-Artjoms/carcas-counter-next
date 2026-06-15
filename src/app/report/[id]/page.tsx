@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getBatchByNumber } from "@/actions/batch-actions";
+import Spinner from "@/components/Spinner/Spinner";
 import HistoricView from "./view";
 
 export async function generateMetadata({
@@ -27,5 +30,19 @@ export default async function ReportPage({
     throw new Error(response.error);
   }
 
-  return <HistoricView initialData={response.data || []} />;
+  if (!response.data?.length) {
+    notFound();
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center">
+          <Spinner size={60} />
+        </div>
+      }
+    >
+      <HistoricView initialData={response.data} />
+    </Suspense>
+  );
 }
