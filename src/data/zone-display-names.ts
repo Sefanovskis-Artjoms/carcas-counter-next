@@ -11,8 +11,8 @@ export const CARCAS_PART_SELECT_OPTIONS: {
   label: string;
   title: string;
 }[] = [
-  { value: "upper", label: "FQ", title: "Fore quarter" },
-  { value: "lower", label: "HQ", title: "Hind quarter" },
+  { value: "fq", label: "FQ", title: "Fore quarter" },
+  { value: "hq", label: "HQ", title: "Hind quarter" },
 ];
 
 // MARK: Zone labels

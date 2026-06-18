@@ -46,7 +46,7 @@ export default function HomeView() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isIncreaseMode, setIsIncreaseMode] = useState(true);
   const [isClickAmountChanging, setIsClickAmountChanging] = useState(false);
-  const [selectedPart, setSelectedPart] = useState<"upper" | "lower">("upper");
+  const [selectedPart, setSelectedPart] = useState<"fq" | "hq">("fq");
   const [updateAmount, setUpdateAmount] = useState(1);
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
   const [isCarcasVisible, setIsCarcasVisible] = useState(true);

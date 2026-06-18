@@ -25,7 +25,7 @@ export default function HistoricView({
   const [selectedDate, setSelectedDate] = useState<string>(
     searchParams.get("date") || "summary",
   );
-  const [selectedPart, setSelectedPart] = useState<"upper" | "lower">("upper");
+  const [selectedPart, setSelectedPart] = useState<"fq" | "hq">("fq");
   const [highlightZone, setHighlightZone] = useState<number | null>(null);
   const [isCarcasVisible, setIsCarcasVisible] = useState(true);
 

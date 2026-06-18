@@ -14,6 +14,20 @@ import Spinner from "../Spinner/Spinner";
 
 const HIGHLIGHT_DURATION = 500;
 
+/**
+ * Contaminant grid: zones as columns, contaminant types as rows.
+ *
+ * Two non-obvious bits:
+ *  - Placeholder rows: the selected FQ/HQ part always renders every zone, even
+ *    ones missing from `data` (e.g. older batches saved before a zone existed).
+ *    Missing zones get a synthetic entry with a negative `id` (`-zoneNumber`) so
+ *    React keys stay unique; these cells render read-only and never call back to
+ *    the server (you can't increment a row that has no DB record).
+ *  - Highlight timers: clicking a carcass zone briefly flashes its column. Each
+ *    flash is tracked per row id in `timersMap` so rapid repeated clicks on the
+ *    same zone reset cleanly instead of leaving stale timeouts running.
+ */
+
 // MARK: Props
 
 export default function Table({
@@ -29,7 +43,7 @@ export default function Table({
   centeredMessage,
 }: {
   data?: CarcasEntry[];
-  selectedCarcasPart?: "upper" | "lower" | "whole";
+  selectedCarcasPart?: "fq" | "hq" | "whole";
   isReadOnly?: boolean;
   isLoading?: boolean;
   increaseMode?: boolean;

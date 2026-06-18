@@ -11,7 +11,7 @@ import {
 
 // MARK: Types
 
-type CarcasPart = "upper" | "lower" | "whole";
+type CarcasPart = "fq" | "hq" | "whole";
 
 interface CarcasProps {
   isDisabled?: boolean;
@@ -94,9 +94,9 @@ export default function Carcas({
   selectedCarcasPart = "whole",
   onZoneClick,
 }: CarcasProps) {
-  const partsToRender: ("upper" | "lower")[] =
+  const partsToRender: ("fq" | "hq")[] =
     selectedCarcasPart === "whole"
-      ? ["upper", "lower"]
+      ? ["fq", "hq"]
       : [selectedCarcasPart];
 
   const isWhole = selectedCarcasPart === "whole";
@@ -107,7 +107,7 @@ export default function Carcas({
     <div
       className={isWhole ? styles.containerWhole : styles.container}
     >
-      {/* MARK: Carcas parts (upper / lower) */}
+      {/* MARK: Carcas parts (FQ / HQ) */}
       {partsToRender.map((part) => (
         <CarcasPartSection
           key={part}

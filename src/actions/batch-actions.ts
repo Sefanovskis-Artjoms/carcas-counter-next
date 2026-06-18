@@ -168,6 +168,11 @@ async function insertBatchZoneRows(
   await db.query(queries.createNewBatch, [values]);
 }
 
+// Guarantees today's batch has a row for every current zone before it's opened.
+// Why: the set of zones can grow over time, so a batch created earlier today (or
+// migrated from an older schema) may be missing newer zones. We backfill only the
+// missing ones — reusing the batch's existing date — so the UI never renders gaps
+// and counters for new zones start from a real, writable DB row (not a placeholder).
 async function ensureTodaysBatch(batchNumber: string): Promise<void> {
   const [rows] = await db.query<RowDataPacket[]>(
     queries.getTodaysBatchByNumber,

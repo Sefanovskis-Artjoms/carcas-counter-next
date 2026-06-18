@@ -1,5 +1,16 @@
 import { ICON_MAP, IconName } from "@/data/icon-data";
 
+/**
+ * Renders an icon by injecting its raw SVG markup inline.
+ *
+ * Why inline (dangerouslySetInnerHTML) instead of an <img>: inlining the SVG
+ * keeps it in the DOM so CSS can style it (fill/stroke via `currentColor`, sizing
+ * per usage) — needed because the same icon appears in different colours/sizes.
+ *
+ * Safe to use dangerouslySetInnerHTML here: the markup comes only from the local,
+ * developer-authored ICON_MAP (`@/data/icon-data`) — never from user input — so
+ * there's no untrusted-HTML/XSS vector.
+ */
 export default function Icon({
   name,
   className,

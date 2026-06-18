@@ -69,6 +69,12 @@ export default function HistoryView({
 
   // MARK: Layout helpers
 
+  // Page size is not fixed — it's computed so exactly as many batch buttons as
+  // fit the visible list area are shown, with no inner scrolling. This keeps the
+  // history usable on very different screens (a small tablet vs a wall monitor)
+  // without hardcoding a count. We measure a real list item (creating a hidden
+  // throwaway one if the list is currently empty) to get the true rendered row
+  // height, then derive rows × columns from the container size and grid gaps.
   const recalcPageSize = useCallback(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
@@ -183,6 +189,11 @@ export default function HistoryView({
     return filteredItems.slice(startIndex, startIndex + pageSize);
   }, [filteredItems, currentPage, pageSize, maxPageCount]);
 
+  // Builds the page-number row with "..." gaps so it stays a fixed, compact
+  // width no matter how many pages exist: always show first/last, the current
+  // page and its neighbours, and collapse everything else. The `=== 2` / `===
+  // total - 1` checks replace a "..." that would hide just one page with that
+  // page itself (a gap of one is pointless).
   const paginationNumbers = useMemo(() => {
     const total = maxPageCount;
     const current = currentPage;

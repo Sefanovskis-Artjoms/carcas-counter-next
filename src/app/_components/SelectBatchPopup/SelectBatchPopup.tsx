@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./SelectBatchPopup.module.scss";
 import Spinner from "@/components/Spinner/Spinner";
 import {
@@ -24,10 +24,6 @@ export default function SelectBatchPopup({
   onClose,
   onSelectBatch,
 }: PopupProps) {
-  // MARK: Refs
-
-  const popupRef = useRef<HTMLDivElement>(null);
-
   // MARK: State
 
   const [inputValue, setInputValue] = useState("");
@@ -189,7 +185,7 @@ export default function SelectBatchPopup({
   // MARK: HTML
 
   return (
-    <div className={styles.popup} ref={popupRef}>
+    <div className={styles.popup}>
       {/* MARK: Header */}
       <div className="flex justify-between items-center pl-4 border-b border-border bg-gray-200">
         <span className="text-2xl">Select or create batch</span>
