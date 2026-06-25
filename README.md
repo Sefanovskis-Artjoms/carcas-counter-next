@@ -5,7 +5,7 @@ Web app for counting carcass contaminants (hair, grease, clots, etc.) by zone an
 ## Requirements
 
 - Node.js 20+
-- MySQL server (e.g. via XAMPP / phpMyAdmin)
+- Microsoft SQL Server (2019+ recommended; SQL Server Express works too)
 - npm
 
 ## Quick start
@@ -26,8 +26,8 @@ script is provided at [`db/db.sql`](db/db.sql) so you don't have to create anyth
 
 Run it once, using either option:
 
-- **phpMyAdmin:** open the **Import** tab and select `db/db.sql` (or paste its contents into the **SQL** tab and press **Go**).
-- **Command line:** `mysql -u root -p < db/db.sql`
+- **SSMS / Azure Data Studio:** open `db/db.sql` and press **Execute**.
+- **Command line (sqlcmd):** `sqlcmd -S localhost -U sa -P your_password -i db/db.sql`
 
 The script creates the database `pickstock-carcas-counters` and the `maintable` table.
 The database name must match `DB_NAME` in your `.env` — if you use a different name,
@@ -42,10 +42,13 @@ Copy `.env.example` to `.env` and set:
 | `HOSTNAME`    | Server hostname (`localhost`) |
 | `PORT`        | Port (e.g. `3000`)         |
 | `APP_ORIGIN`  | Optional. Browser origin allowed for Socket.IO. Defaults to `http://HOSTNAME:PORT`. Set to the URL users open in the browser when deploying on a LAN IP (e.g. `http://192.168.1.50:3000`). |
-| `DB_HOST`     | MySQL host                 |
-| `DB_USER`     | MySQL user                 |
-| `DB_PASSWORD` | MySQL password             |
+| `DB_HOST`     | SQL Server host            |
+| `DB_PORT`     | SQL Server port (default `1433`) |
+| `DB_USER`     | SQL Server login           |
+| `DB_PASSWORD` | SQL Server password        |
 | `DB_NAME`     | Database name              |
+| `DB_ENCRYPT`  | Optional. `true` to encrypt the connection (e.g. Azure SQL). Defaults to `false`. |
+| `DB_TRUST_SERVER_CERT` | Optional. `true` to trust a self-signed certificate (local/LAN). Defaults to `true`. |
 
 ## npm scripts
 
@@ -93,7 +96,7 @@ src/
 │   ├── icon-data.ts                 # Inline SVG strings used by Icon
 │   └── zone-display-names.ts        # Zone labels (A - Shin, etc.) + FQ/HQ option labels
 ├── db/queries.ts                    # SQL queries
-├── lib/db.ts                        # MySQL connection pool
+├── lib/db.ts                        # SQL Server connection pool
 ├── providers/ReactQueryProvider.tsx # TanStack Query client provider
 └── types/interfaces.ts              # Shared TypeScript types
 db/db.sql                            # One-time DB + maintable setup script
@@ -112,7 +115,7 @@ server.ts                            # Custom HTTP server + Socket.IO
 | Server logic   | Next.js Server Actions (`"use server"`) |
 | Client state   | TanStack React Query (cache, optimistic updates) |
 | Real-time      | Socket.IO (server + client) |
-| Database       | MySQL (`mysql2`) — single `maintable` |
+| Database       | Microsoft SQL Server (`mssql`) — single `maintable` |
 | Server         | Custom Node.js HTTP server (`server.ts`) |
 
 ### Custom server
@@ -126,7 +129,7 @@ User clicks a cell in the table
         ↓
 HomeView → useMutation → updateCounterAction (Server Action)
         ↓
-MySQL UPDATE on maintable
+SQL Server UPDATE on maintable
         ↓
 React Query optimistically updates the cache
         ↓
