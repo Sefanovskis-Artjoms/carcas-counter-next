@@ -24,18 +24,22 @@ FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
+# Run everything as the unprivileged "node" user that ships with the image, and
+# make sure it owns /app so the server can write its runtime cache (.next/cache)
+# without permission errors.
+RUN chown node:node /app
+USER node
+
 # Only production dependencies are needed to run the compiled server.
-COPY package.json package-lock.json ./
+COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy the build artifacts and the files the server reads at runtime.
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/dist_server ./dist_server
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.ts ./next.config.ts
-
-# Run as the unprivileged user that ships with the node image.
-USER node
+# next.config is plain JS so no TypeScript is needed at runtime.
+COPY --chown=node:node --from=builder /app/.next ./.next
+COPY --chown=node:node --from=builder /app/dist_server ./dist_server
+COPY --chown=node:node --from=builder /app/public ./public
+COPY --chown=node:node --from=builder /app/next.config.js ./next.config.js
 
 EXPOSE 3000
 CMD ["node", "dist_server/server.js"]

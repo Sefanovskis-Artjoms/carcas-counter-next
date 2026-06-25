@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   devIndicators: false,
   sassOptions: {
     prependData: `@use "@/styles/variables" as *;`,
@@ -9,4 +8,4 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 };
 
-export default nextConfig;
+module.exports = nextConfig;
