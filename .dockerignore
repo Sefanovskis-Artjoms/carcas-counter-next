@@ -1,0 +1,30 @@
+# Build output and dependencies (rebuilt inside the image)
+node_modules
+.next
+dist_server
+out
+build
+coverage
+
+# Local env files — pass values via docker-compose instead
+.env
+.env.*
+!.env.docker.example
+
+# Git / IDE / OS
+.git
+.gitignore
+.vscode
+.idea
+.cursor
+.DS_Store
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Logs and TS build info
+*.log
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,51 @@
+# =============================================================================
+# Carcas Counter — Docker Compose stack (app + MySQL)
+# Works locally (`docker compose up -d`) and as a Synology Container Manager
+# "Project". Values come from a .env file next to this file
+# (copy .env.docker.example -> .env and edit it).
+# =============================================================================
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+      # Runs only on first start (empty data dir): creates the maintable schema.
+      - ./db/db.sql:/docker-entrypoint-initdb.d/db.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Must be 0.0.0.0 inside a container so it accepts connections from
+      # outside the container. (Docker auto-sets HOSTNAME to the container id,
+      # so this override is required.)
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      # The address users open in their browser — required for live updates
+      # (Socket.IO CORS). Set this to your NAS IP, e.g. http://192.168.1.50:3000
+      APP_ORIGIN: ${APP_ORIGIN}
+      # "db" is the service name above — Compose resolves it on the internal network.
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    ports:
+      # host:container — change the left side if 3000 is taken on the NAS.
+      - "3000:3000"
+
+volumes:
+  db_data:
